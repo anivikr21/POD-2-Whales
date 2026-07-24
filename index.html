@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="A secure clinical screening interface for familial hypercholesterolemia." />
+  <title>LipidLens | FH Screening</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="LipidLens home"><svg aria-hidden="true" viewBox="0 0 36 36" fill="none"><path d="M6 18c0-6.6 5.4-12 12-12s12 5.4 12 12-5.4 12-12 12S6 24.6 6 18Z" stroke="currentColor" stroke-width="2.5"/><path d="M12 20.5c2.2 2 4.5 3 7 3 3.2 0 5.7-1.6 7.5-4.8M11 15.6c2.4-2 4.8-3.1 7.2-3.1 2.3 0 4.5.9 6.8 2.8" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg><span>Lipid<span>Lens</span></span></a>
+    <span class="header-note"><i></i> Clinical decision support</span>
+    <a class="help-link" href="#how-it-works">How it works <span aria-hidden="true">↓</span></a>
+  </header>
+  <main id="top">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <p class="eyebrow">Familial hypercholesterolemia screening</p>
+        <h1 id="hero-title">A clearer signal<br />for inherited risk.</h1>
+        <p class="intro">Upload a structured patient data file to receive an explainable FH screening result, powered by a trained random-forest model.</p>
+        <div class="privacy-line"><span class="lock" aria-hidden="true">⌁</span> Files are processed securely and are not retained.</div>
+      </div>
+      <section class="screening-card" aria-labelledby="upload-title">
+        <div class="card-heading"><div><p class="step-label">Step 01</p><h2 id="upload-title">Upload patient data</h2></div><span class="file-badge">CSV</span></div>
+        <p class="card-description">Choose a CSV file exported from your clinical or research dataset.</p>
+        <label class="drop-zone" id="drop-zone" for="file-input">
+          <input id="file-input" type="file" accept=".csv,text/csv" />
+          <span class="upload-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 14.5v3.25A2.25 2.25 0 0 0 7.25 20h9.5A2.25 2.25 0 0 0 19 17.75V14.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <span class="drop-copy"><strong>Drop your CSV here</strong><span>or click to browse files</span></span>
+        </label>
+        <div class="file-selected" id="file-selected" hidden><span class="document-icon" aria-hidden="true">▤</span><span class="file-name" id="file-name"></span><button type="button" id="remove-file" aria-label="Remove selected file">×</button></div>
+        <div class="card-footer"><span>Maximum file size: 10 MB</span><button class="analyze-button" id="analyze-button" type="button" disabled>Analyze data <span>→</span></button></div>
+      </section>
+    </section>
+    <section class="result-panel" id="result-panel" aria-live="polite" hidden><div class="result-label">Screening result</div><div><strong>Analysis ready</strong><p>Your file has been validated and is ready for model inference.</p></div><button type="button" id="new-screening">Upload another file</button></section>
+    <section class="confidence-strip" id="how-it-works" aria-label="About the screening tool">
+      <article><span class="number">01</span><div><h2>Built for clinical data</h2><p>Designed for structured datasets—not self-reported estimates.</p></div></article>
+      <article><span class="number">02</span><div><h2>Explainable screening</h2><p>Clear positive or negative risk classification to support review.</p></div></article>
+      <article><span class="number">03</span><div><h2>Not a diagnosis</h2><p>Results should always be interpreted by qualified clinicians.</p></div></article>
+    </section>
+  </main>
+  <footer><span>© 2026 POD 2 : Whales</span><span>FH screening assistant</span></footer>
+  <script src="script.js"></script>
+</body>
+</html>

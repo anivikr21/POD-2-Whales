@@ -1,0 +1,33 @@
+:root { --ink:#13231f; --muted:#63736d; --line:#dce5df; --canvas:#f8faf7; --sage:#e5eee7; --teal:#0e5a50; --card:#fffefa; }
+* { box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body { margin:0; background:var(--canvas); color:var(--ink); font-family:Manrope,Arial,sans-serif; }
+.site-header { height:82px; display:flex; align-items:center; justify-content:space-between; max-width:1280px; padding:0 40px; margin:auto; border-bottom:1px solid var(--line); }
+.brand { display:flex; align-items:center; gap:9px; color:var(--ink); text-decoration:none; font-size:21px; font-weight:800; letter-spacing:-1px; }
+.brand svg { width:28px; color:var(--teal); }.brand span span { color:var(--teal); }
+.header-note { font-family:"DM Mono",monospace; font-size:11px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted); }
+.header-note i { display:inline-block; height:7px; width:7px; border-radius:50%; background:#40a77d; margin:0 7px 1px 0; }
+.help-link { color:var(--ink); text-decoration:none; font-size:13px; font-weight:700; }.help-link span { color:var(--teal); padding-left:5px; }
+main { max-width:1280px; margin:auto; padding:80px 40px 54px; }
+.hero { display:grid; grid-template-columns:minmax(0,.95fr) minmax(440px,.86fr); align-items:center; gap:92px; min-height:475px; }
+.eyebrow,.step-label,.result-label { font-family:"DM Mono",monospace; text-transform:uppercase; letter-spacing:.11em; font-size:11px; color:var(--teal); font-weight:500; }
+.eyebrow { margin:0 0 18px; }
+h1 { font-size:clamp(43px,5vw,67px); letter-spacing:-.065em; line-height:1.035; margin:0; font-weight:800; }
+.intro { color:var(--muted); font-size:16px; line-height:1.7; max-width:490px; margin:25px 0 22px; }
+.privacy-line { display:flex; align-items:center; gap:8px; color:#4c625a; font-size:12px; font-weight:600; }.lock { display:grid; place-items:center; width:19px; height:19px; color:var(--teal); background:var(--sage); border-radius:50%; font-size:17px; }
+.screening-card { background:var(--card); box-shadow:0 18px 45px rgba(23,59,46,.08),0 2px 4px rgba(23,59,46,.04); border-radius:14px; padding:31px; }
+.card-heading { display:flex; justify-content:space-between; align-items:flex-start; }.step-label { margin:0 0 7px; color:#71817b; font-size:10px; }
+h2 { margin:0; letter-spacing:-.04em; font-size:21px; }.file-badge { border:1px solid #b8c9bf; color:#557167; font-family:"DM Mono",monospace; font-size:10px; letter-spacing:.08em; border-radius:4px; padding:5px 7px; }
+.card-description { margin:12px 0 21px; font-size:12px; color:var(--muted); }
+.drop-zone { border:1.5px dashed #aebfb5; border-radius:9px; min-height:153px; display:flex; flex-direction:column; justify-content:center; align-items:center; cursor:pointer; color:var(--teal); transition:.18s ease; }
+.drop-zone:hover,.drop-zone.dragging { background:#f3f9f4; border-color:var(--teal); }.drop-zone input { position:absolute; inline-size:1px; block-size:1px; opacity:0; }
+.upload-icon { height:35px; width:35px; display:grid; place-items:center; background:var(--sage); border-radius:8px; margin-bottom:10px; }.upload-icon svg { width:19px; }
+.drop-copy { display:flex; flex-direction:column; align-items:center; gap:3px; }.drop-copy strong { font-size:13px; }.drop-copy span { font-size:11px; color:var(--muted); }
+.file-selected { border:1px solid #b7d8c6; background:#f4fbf6; border-radius:8px; min-height:53px; align-items:center; gap:10px; padding:0 13px; margin-top:12px; color:var(--teal); }.document-icon { font-size:19px; }.file-name { font-size:12px; font-weight:700; color:#36564b; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }.file-selected button { margin-left:auto; border:0; background:transparent; color:#557167; font-size:21px; cursor:pointer; }
+.card-footer { margin-top:21px; display:flex; align-items:center; justify-content:space-between; font-size:10px; color:#84918c; }
+.analyze-button { border:0; border-radius:7px; background:var(--teal); color:white; padding:12px 16px; font-family:inherit; font-size:12px; font-weight:700; cursor:pointer; transition:.18s ease; }.analyze-button:disabled { background:#b4c2ba; cursor:not-allowed; }.analyze-button:not(:disabled):hover { background:#073f38; transform:translateY(-1px); }.analyze-button span { font-size:16px; margin-left:8px; }
+.result-panel { background:#e6f3eb; border:1px solid #bfddcc; border-radius:12px; max-width:710px; margin:46px auto 0; padding:20px 23px; align-items:center; gap:23px; }.result-panel[hidden] { display:none; }.result-panel:not([hidden]) { display:flex; }.result-label { color:#237253; font-size:10px; }.result-panel strong { font-size:15px; }.result-panel p { color:#527066; font-size:12px; margin:4px 0 0; }.result-panel button { margin-left:auto; white-space:nowrap; color:var(--teal); background:transparent; border:0; font-family:inherit; font-size:12px; font-weight:800; cursor:pointer; }
+.confidence-strip { display:grid; grid-template-columns:repeat(3,1fr); margin-top:104px; padding-top:28px; border-top:1px solid var(--line); gap:32px; }.confidence-strip article { display:flex; gap:16px; }.number { color:#8ba096; font-family:"DM Mono",monospace; font-size:12px; padding-top:4px; }.confidence-strip h2 { font-size:14px; }.confidence-strip p { font-size:12px; line-height:1.55; color:var(--muted); max-width:255px; margin:7px 0 0; }
+footer { max-width:1280px; margin:auto; padding:20px 40px 30px; border-top:1px solid var(--line); display:flex; justify-content:space-between; color:#82918b; font-family:"DM Mono",monospace; text-transform:uppercase; letter-spacing:.06em; font-size:9px; }
+@media (max-width:800px) { .site-header { padding:0 22px; height:68px; }.header-note { display:none; }main { padding:55px 22px 40px; }.hero { grid-template-columns:1fr; gap:45px; }.screening-card { padding:24px; }.confidence-strip { grid-template-columns:1fr; margin-top:65px; gap:23px; }footer { padding:20px 22px 27px; }.result-panel:not([hidden]) { align-items:flex-start; flex-wrap:wrap; }.result-panel button { margin-left:0; } }
+@media (max-width:420px) { h1 { font-size:42px; }.card-footer { align-items:flex-start; gap:17px; flex-direction:column; }.analyze-button { width:100%; }.help-link { font-size:11px; } }
