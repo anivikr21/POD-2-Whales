@@ -14,7 +14,7 @@
   <header class="site-header">
     <a class="brand" href="#top" aria-label="LipidLens home"><svg aria-hidden="true" viewBox="0 0 36 36" fill="none"><path d="M6 18c0-6.6 5.4-12 12-12s12 5.4 12 12-5.4 12-12 12S6 24.6 6 18Z" stroke="currentColor" stroke-width="2.5"/><path d="M12 20.5c2.2 2 4.5 3 7 3 3.2 0 5.7-1.6 7.5-4.8M11 15.6c2.4-2 4.8-3.1 7.2-3.1 2.3 0 4.5.9 6.8 2.8" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg><span>Lipid<span>Lens</span></span></a>
     <span class="header-note"><i></i> Clinical decision support</span>
-    <a class="help-link" href="#how-it-works">How it works <span aria-hidden="true">↓</span></a>
+    <a class="help-link" href="#next-steps">Next steps <span aria-hidden="true">↓</span></a>
   </header>
   <main id="top">
     <section class="hero" aria-labelledby="hero-title">
@@ -37,6 +37,57 @@
       </section>
     </section>
     <section class="result-panel" id="result-panel" aria-live="polite" hidden><div class="result-label">Screening result</div><div><strong>Analysis ready</strong><p>Your file has been validated and is ready for model inference.</p></div><button type="button" id="new-screening">Upload another file</button></section>
+    <section class="next-steps" id="next-steps" aria-labelledby="next-steps-title">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Clinical follow-up guide</p>
+          <h2 id="next-steps-title">Next steps by screening likelihood</h2>
+        </div>
+        <p>Use the probability range from the screening result to identify the appropriate follow-up. These recommendations support, but do not replace, clinical judgment.</p>
+      </div>
+      <div class="risk-grid">
+        <article class="risk-card low-risk">
+          <div class="risk-card-heading"><span class="risk-range">0–25%</span><span class="risk-level">Low risk</span></div>
+          <p class="risk-interpretation">FH is unlikely based on the information provided.</p>
+          <h3>Recommended actions</h3>
+          <ul>
+            <li>Continue routine cholesterol screening.</li>
+            <li>Maintain heart-healthy habits.</li>
+            <li>Recheck cholesterol levels during regular medical visits.</li>
+          </ul>
+        </article>
+        <article class="risk-card moderate-risk">
+          <div class="risk-card-heading"><span class="risk-range">25–50%</span><span class="risk-level">Moderate risk</span></div>
+          <p class="risk-interpretation">Some features suggest possible FH.</p>
+          <h3>Recommended actions</h3>
+          <ul>
+            <li>Discuss results with a healthcare provider.</li>
+            <li>Get a full lipid panel, especially LDL cholesterol.</li>
+            <li>Review family history of high cholesterol or early heart disease.</li>
+          </ul>
+        </article>
+        <article class="risk-card high-risk">
+          <div class="risk-card-heading"><span class="risk-range">50–75%</span><span class="risk-level">High risk</span></div>
+          <p class="risk-interpretation">FH is more likely.</p>
+          <h3>Recommended actions</h3>
+          <ul>
+            <li>Schedule a clinical evaluation.</li>
+            <li>Consider genetic testing for FH-related genes such as <em>LDLR</em>, <em>APOB</em>, and <em>PCSK9</em>.</li>
+            <li>Screen close relatives because FH can run in families.</li>
+          </ul>
+        </article>
+        <article class="risk-card very-high-risk">
+          <div class="risk-card-heading"><span class="risk-range">75–100%</span><span class="risk-level">Very high risk</span></div>
+          <p class="risk-interpretation">Strong likelihood of FH.</p>
+          <h3>Recommended actions</h3>
+          <ul>
+            <li>Schedule a clinical evaluation.</li>
+            <li>Confirm with cholesterol measurements and/or genetic testing.</li>
+            <li>Begin appropriate management if confirmed.</li>
+          </ul>
+        </article>
+      </div>
+    </section>
     <section class="confidence-strip" id="how-it-works" aria-label="About the screening tool">
       <article><span class="number">01</span><div><h2>Built for clinical data</h2><p>Designed for structured datasets—not self-reported estimates.</p></div></article>
       <article><span class="number">02</span><div><h2>Explainable screening</h2><p>Clear positive or negative risk classification to support review.</p></div></article>
