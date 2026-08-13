@@ -1,24 +1,82 @@
-# POD-2-Whales
+# LipidLens
 
-This is the repo that we will be using to collaborate on the code for this project.
-# POD 2 : Whales — LipidLens
+LipidLens is a Vercel-ready XGBoost variant-classification application. The
+browser uploads a ClinVar-style CSV to a same-origin FastAPI endpoint, which
+performs feature engineering and server-side inference.
 
-A lightweight UI for uploading structured clinical data to screen for familial hypercholesterolemia (FH).
+The model predicts one of three variant classes:
 
-The interface validates CSV file type and a 10 MB size limit, sends the file to the team's model API, and displays the XGBoost variant classifications.
+- `Benign`
+- `Pathogenic`
+- `Uncertain/Conflicting`
 
-## Run with the Colab XGBoost model
+This output is decision support, not a patient diagnosis.
 
-1. Open the `POD 2` Colab notebook.
-2. Run the XGBoost training cell and choose the ClinVar training CSV when prompted.
-3. Add an ngrok token to Colab Secrets as `NGROK_AUTHTOKEN` and enable notebook access.
-4. Run the final `XGBoost prediction API for the LipidLens frontend` cell.
-5. Copy the printed **Backend URL**.
-6. From this directory, run `py -m http.server 5500` and open `http://localhost:5500`.
-7. Upload a prediction CSV, click **Analyze data**, and paste the Backend URL when prompted.
+## Project structure
 
-The browser remembers the Backend URL. If Colab restarts, clear the browser key
-`lipidlensBackendUrl` or use a private window so the site asks for the new URL.
+```text
+api/index.py       FastAPI health and prediction endpoints
+models/            Exported XGBoost model assets
+public/            Static HTML, CSS, and browser JavaScript
+requirements.txt   Python runtime dependencies
+vercel.json         Vercel function configuration
+```
 
-The XGBoost model classifies variants as `Benign`, `Pathogenic`, or
-`Uncertain/Conflicting`; it does not produce an individual patient's probability of FH.
+## Add the trained model
+
+Run this after the XGBoost training cell in Colab:
+
+```python
+import json
+from google.colab import files
+
+model.save_model("xgboost_model.json")
+with open("model_metadata.json", "w") as metadata_file:
+    json.dump({
+        "classes": le.classes_.tolist(),
+        "training_position_median": float(df["pos_grch38"].median()),
+    }, metadata_file)
+
+files.download("xgboost_model.json")
+files.download("model_metadata.json")
+```
+
+Place the downloaded files in `models/` using those exact filenames. Do not
+commit training data, patient records, API keys, or Colab secrets.
+
+## Run locally
+
+Install Vercel CLI 48.1.8 or later, then run:
+
+```powershell
+npm install --global vercel
+vercel dev
+```
+
+Open `http://localhost:3000`. Check the backend directly at
+`http://localhost:3000/api/health`.
+
+## Deploy
+
+1. Push this repository to GitHub.
+2. In Vercel, select **Add New → Project**.
+3. Import the `POD-2-Whales` repository.
+4. Leave the framework and build settings at their detected defaults.
+5. Select **Deploy**.
+
+The frontend and API use the same Vercel domain, so no ngrok URL, Colab runtime,
+CORS configuration, or frontend secret is required.
+
+## Input requirements
+
+Uploads must be CSV files no larger than 4 MB and contain these columns:
+
+- `Type`
+- `Variation`
+- `Molecular consequence`
+- `Protein change`
+- `GRCh38 Location`
+- `Review status`
+
+Vercel rejects function request bodies above 4.5 MB; the application uses a
+4 MB file limit to leave room for multipart request metadata.

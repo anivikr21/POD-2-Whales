@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Classify ClinVar-style genetic variants with an XGBoost model." />
+  <title>LipidLens | Variant Classification</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="#top" aria-label="LipidLens home">
+      <svg aria-hidden="true" viewBox="0 0 36 36" fill="none"><path d="M6 18c0-6.6 5.4-12 12-12s12 5.4 12 12-5.4 12-12 12S6 24.6 6 18Z" stroke="currentColor" stroke-width="2.5"/><path d="M12 20.5c2.2 2 4.5 3 7 3 3.2 0 5.7-1.6 7.5-4.8M11 15.6c2.4-2 4.8-3.1 7.2-3.1 2.3 0 4.5.9 6.8 2.8" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+      <span>Lipid<span>Lens</span></span>
+    </a>
+    <span class="header-note" id="service-status"><i></i> Checking model</span>
+    <a class="help-link" href="#interpretation">Interpretation <span aria-hidden="true">↓</span></a>
+  </header>
+
+  <main id="top">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <p class="eyebrow">Genetic variant classification</p>
+        <h1 id="hero-title">A clearer signal<br />for variant review.</h1>
+        <p class="intro">Upload a ClinVar-style CSV to classify variants as benign, pathogenic, or uncertain/conflicting using the trained XGBoost model.</p>
+        <div class="privacy-line"><span class="lock" aria-hidden="true">⌁</span> Files are processed in memory and are not intentionally retained.</div>
+      </div>
+
+      <section class="screening-card" aria-labelledby="upload-title">
+        <div class="card-heading">
+          <div><p class="step-label">Step 01</p><h2 id="upload-title">Upload variant data</h2></div>
+          <span class="file-badge">CSV</span>
+        </div>
+        <p class="card-description">Choose a CSV containing the columns used by the trained model.</p>
+        <label class="drop-zone" id="drop-zone" for="file-input">
+          <input id="file-input" type="file" accept=".csv,text/csv" />
+          <span class="upload-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5M5 14.5v3.25A2.25 2.25 0 0 0 7.25 20h9.5A2.25 2.25 0 0 0 19 17.75V14.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <span class="drop-copy"><strong>Drop your CSV here</strong><span>or click to browse files</span></span>
+        </label>
+        <div class="file-selected" id="file-selected" hidden>
+          <span class="document-icon" aria-hidden="true">▤</span>
+          <span class="file-name" id="file-name"></span>
+          <button type="button" id="remove-file" aria-label="Remove selected file">×</button>
+        </div>
+        <div class="card-footer">
+          <span>Maximum file size: 4 MB</span>
+          <button class="analyze-button" id="analyze-button" type="button" disabled>Analyze data <span>→</span></button>
+        </div>
+      </section>
+    </section>
+
+    <section class="result-panel" id="result-panel" aria-live="polite" hidden>
+      <div class="result-label">Model result</div>
+      <div><strong id="result-title">Analysis ready</strong><p id="result-description"></p></div>
+      <button type="button" id="new-screening">Upload another file</button>
+    </section>
+
+    <section class="next-steps" id="interpretation" aria-labelledby="interpretation-title">
+      <div class="section-heading">
+        <div><p class="eyebrow">Result interpretation</p><h2 id="interpretation-title">What each class means</h2></div>
+        <p>These are machine-learning classifications of genetic variants. They are not patient diagnoses and require expert review.</p>
+      </div>
+      <div class="risk-grid classification-grid">
+        <article class="risk-card low-risk">
+          <div class="risk-card-heading"><span class="risk-range">Class 01</span><span class="risk-level">Benign</span></div>
+          <p class="risk-interpretation">The model found features associated with variants classified as benign.</p>
+          <h3>Review guidance</h3>
+          <ul><li>Confirm the source data and genomic build.</li><li>Review current ClinVar evidence.</li><li>Do not use this output alone for care decisions.</li></ul>
+        </article>
+        <article class="risk-card moderate-risk">
+          <div class="risk-card-heading"><span class="risk-range">Class 02</span><span class="risk-level">Uncertain / conflicting</span></div>
+          <p class="risk-interpretation">Available model features do not support a clear benign or pathogenic classification.</p>
+          <h3>Review guidance</h3>
+          <ul><li>Inspect conflicting submissions.</li><li>Check functional and segregation evidence.</li><li>Escalate for specialist interpretation.</li></ul>
+        </article>
+        <article class="risk-card high-risk">
+          <div class="risk-card-heading"><span class="risk-range">Class 03</span><span class="risk-level">Pathogenic</span></div>
+          <p class="risk-interpretation">The model found features associated with variants classified as pathogenic.</p>
+          <h3>Review guidance</h3>
+          <ul><li>Confirm the variant and transcript.</li><li>Review expert-panel assertions.</li><li>Seek qualified clinical interpretation.</li></ul>
+        </article>
+      </div>
+    </section>
+
+    <section class="confidence-strip" aria-label="About the classifier">
+      <article><span class="number">01</span><div><h2>XGBoost model</h2><p>The trained model and preprocessing run only in the server-side API.</p></div></article>
+      <article><span class="number">02</span><div><h2>Structured input</h2><p>Designed for ClinVar-style columns and GRCh38 locations.</p></div></article>
+      <article><span class="number">03</span><div><h2>Decision support</h2><p>Model output supports review; it does not replace expert judgment.</p></div></article>
+    </section>
+  </main>
+
+  <footer><span>© 2026 POD 2 : Whales</span><span>Variant classification assistant</span></footer>
+  <script src="/script.js"></script>
+</body>
+</html>
