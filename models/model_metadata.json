@@ -1,0 +1,7 @@
+{
+  "classes": [
+    "Benign",
+    "Pathogenic",
+    "Uncertain/Conflicting"
+  ]
+}

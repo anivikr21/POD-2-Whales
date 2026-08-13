@@ -4,7 +4,6 @@ from functools import lru_cache
 from io import BytesIO
 from pathlib import Path
 import json
-import re
 
 import numpy as np
 import pandas as pd
@@ -23,30 +22,17 @@ MAX_UPLOAD_BYTES = 4 * 1024 * 1024
 MAX_ROWS = 25_000
 
 RAW_REQUIRED_COLUMNS = (
+    "Genes",
+    "Condition",
     "Type",
-    "Variation",
-    "Molecular consequence",
-    "Protein change",
-    "GRCh38 Location",
-    "Review status",
 )
 
-FEATURE_COLUMNS = (
+TYPE_FEATURES = (
     "is_snv",
     "is_deletion",
     "is_duplication",
     "is_indel",
     "is_cnv",
-    "has_missense",
-    "has_nonsense",
-    "has_frameshift",
-    "has_splice",
-    "has_utr",
-    "has_intron",
-    "has_synonymous",
-    "has_protein_change",
-    "pos_grch38",
-    "review_strength",
 )
 
 app = FastAPI(
@@ -79,79 +65,66 @@ def load_model_bundle():
         metadata = json.load(metadata_file)
 
     class_names = [str(name) for name in metadata["classes"]]
-    position_median = float(metadata["training_position_median"])
     if len(class_names) != model.n_classes_:
         raise ValueError("Model metadata class count does not match the XGBoost model.")
-    return model, class_names, position_median
+    model_feature_names = model.get_booster().feature_names
+    if not model_feature_names:
+        raise ValueError("The XGBoost model does not contain feature names.")
+    return model, class_names, model_feature_names
 
 
-def extract_position(location: object) -> float:
-    if pd.isna(location):
-        return np.nan
-    match = re.search(r":(\d+)", str(location))
-    return float(match.group(1)) if match else np.nan
-
-
-def review_strength(status: object) -> int:
-    normalized = str(status).lower()
-    if "expert panel" in normalized:
-        return 3
-    if "multiple submitters" in normalized:
-        return 2
-    if "single submitter" in normalized:
-        return 1
-    return 0
-
-
-def prepare_features(raw_df: pd.DataFrame, position_median: float) -> pd.DataFrame:
+def prepare_features(
+    raw_df: pd.DataFrame, model_feature_names: list[str]
+) -> pd.DataFrame:
     missing = [column for column in RAW_REQUIRED_COLUMNS if column not in raw_df.columns]
     if missing:
         raise ValueError("Missing required columns: " + ", ".join(missing))
 
     data = raw_df.copy()
-    data = data.dropna(subset=["Type", "Variation"]).reset_index(drop=True)
+    data = data.dropna(subset=["Type"]).reset_index(drop=True)
     if data.empty:
-        raise ValueError("No usable rows remain after validating Type and Variation.")
+        raise ValueError("No usable rows remain after validating Type.")
     if len(data) > MAX_ROWS:
         raise ValueError(f"The CSV contains more than {MAX_ROWS:,} usable rows.")
 
-    data["is_snv"] = (data["Type"] == "single nucleotide variant").astype(int)
-    data["is_deletion"] = (data["Type"] == "Deletion").astype(int)
-    data["is_duplication"] = (data["Type"] == "Duplication").astype(int)
-    data["is_indel"] = data["Type"].isin(["Indel", "Insertion"]).astype(int)
-    data["is_cnv"] = data["Type"].str.contains(
+    supported_features = set(TYPE_FEATURES)
+    supported_features.update(
+        feature
+        for feature in model_feature_names
+        if feature.startswith("Genes_") or feature.startswith("Condition_")
+    )
+    unexpected = [
+        feature for feature in model_feature_names if feature not in supported_features
+    ]
+    if unexpected:
+        raise ValueError(
+            "Unsupported model feature schema: " + ", ".join(unexpected[:5])
+        )
+
+    features = pd.DataFrame(
+        np.zeros((len(data), len(model_feature_names)), dtype=np.float32),
+        columns=model_feature_names,
+    )
+
+    genes = data["Genes"].fillna("").astype(str)
+    conditions = data["Condition"].fillna("").astype(str)
+    for row_index, (gene, condition) in enumerate(zip(genes, conditions)):
+        gene_column = f"Genes_{gene}"
+        condition_column = f"Condition_{condition}"
+        if gene_column in features.columns:
+            features.at[row_index, gene_column] = 1
+        if condition_column in features.columns:
+            features.at[row_index, condition_column] = 1
+
+    features["is_snv"] = (data["Type"] == "single nucleotide variant").astype(int)
+    features["is_deletion"] = (data["Type"] == "Deletion").astype(int)
+    features["is_duplication"] = (data["Type"] == "Duplication").astype(int)
+    features["is_indel"] = data["Type"].isin(["Indel", "Insertion"]).astype(int)
+    features["is_cnv"] = data["Type"].str.contains(
         "copy number|Haplotype|Inversion", case=False, na=False
     ).astype(int)
 
-    consequence = data["Molecular consequence"]
-    data["has_missense"] = consequence.str.contains(
-        "missense", case=False, na=False
-    ).astype(int)
-    data["has_nonsense"] = consequence.str.contains(
-        "nonsense|stop", case=False, na=False
-    ).astype(int)
-    data["has_frameshift"] = consequence.str.contains(
-        "frameshift", case=False, na=False
-    ).astype(int)
-    data["has_splice"] = consequence.str.contains(
-        "splice", case=False, na=False
-    ).astype(int)
-    data["has_utr"] = consequence.str.contains(
-        "utr|5 prime|3 prime", case=False, na=False
-    ).astype(int)
-    data["has_intron"] = consequence.str.contains(
-        "intron", case=False, na=False
-    ).astype(int)
-    data["has_synonymous"] = consequence.str.contains(
-        "synonymous", case=False, na=False
-    ).astype(int)
-    data["has_protein_change"] = data["Protein change"].notna().astype(int)
-    data["pos_grch38"] = (
-        data["GRCh38 Location"].apply(extract_position).fillna(position_median)
-    )
-    data["review_strength"] = data["Review status"].apply(review_strength)
-
-    return data.loc[:, FEATURE_COLUMNS]
+    return features
 
 
 @app.get("/api/health")
@@ -182,12 +155,12 @@ async def predict(file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail="The uploaded file is not a valid CSV.") from error
 
     try:
-        model, class_names, position_median = load_model_bundle()
+        model, class_names, model_feature_names = load_model_bundle()
     except (FileNotFoundError, KeyError, TypeError, ValueError, json.JSONDecodeError) as error:
         raise HTTPException(status_code=503, detail=str(error)) from error
 
     try:
-        features = prepare_features(raw_df, position_median)
+        features = prepare_features(raw_df, model_feature_names)
         encoded_predictions = model.predict(features).astype(int)
         probability_rows = model.predict_proba(features)
         labels = [class_names[index] for index in encoded_predictions]

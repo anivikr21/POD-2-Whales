@@ -34,7 +34,6 @@ model.save_model("xgboost_model.json")
 with open("model_metadata.json", "w") as metadata_file:
     json.dump({
         "classes": le.classes_.tolist(),
-        "training_position_median": float(df["pos_grch38"].median()),
     }, metadata_file)
 
 files.download("xgboost_model.json")
@@ -72,11 +71,13 @@ CORS configuration, or frontend secret is required.
 Uploads must be CSV files no larger than 4 MB and contain these columns:
 
 - `Type`
-- `Variation`
-- `Molecular consequence`
-- `Protein change`
-- `GRCh38 Location`
-- `Review status`
+- `Genes`
+- `Condition`
+- `Type`
 
 Vercel rejects function request bodies above 4.5 MB; the application uses a
 4 MB file limit to leave room for multipart request metadata.
+
+The backend uses the CPU-only XGBoost distribution. It reads the same model
+format as standard XGBoost while avoiding GPU and federated-learning binaries
+that would exceed Vercel's 500 MB function bundle limit.
