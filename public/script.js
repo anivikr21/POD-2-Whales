@@ -71,6 +71,9 @@ function clearScreening() {
 
 function showResult(title, description, isError = false) {
   resultPanel.classList.toggle('result-error', isError);
+  if (isError) {
+    delete resultPanel.dataset.classification;
+  }
   resultTitle.textContent = title;
   resultDescription.textContent = description;
   resultPanel.hidden = false;
@@ -80,16 +83,25 @@ function showResult(title, description, isError = false) {
 function renderResults(data) {
   const firstResult = data.first_result;
   const confidence = Math.round(firstResult.confidence * 100);
-  const breakdown = Object.entries(data.summary)
+  const classCounts = Object.entries(data.summary)
     .filter(([, count]) => count > 0)
+    .sort(([, firstCount], [, secondCount]) => secondCount - firstCount);
+  const breakdown = classCounts
     .map(([classification, count]) => `${classification}: ${count}`)
     .join(' · ');
+  const [dominantClass, dominantCount] = classCounts[0];
 
   const title = data.rows_analyzed === 1
     ? `${firstResult.classification} — ${confidence}% model confidence`
-    : `${data.rows_analyzed.toLocaleString()} variants analyzed`;
+    : `${dominantClass} — most frequent classification`;
 
-  showResult(title, `${breakdown}. This model output is not a clinical diagnosis.`);
+  resultPanel.dataset.classification = dominantClass;
+
+  const description = data.rows_analyzed === 1
+    ? `Class probabilities were calculated for one variant. This model output is not a clinical diagnosis.`
+    : `${dominantCount.toLocaleString()} of ${data.rows_analyzed.toLocaleString()} variants were classified as ${dominantClass}. ${breakdown}. This model output is not a clinical diagnosis.`;
+
+  showResult(title, description);
 }
 
 input.addEventListener('change', () => setFile(input.files[0]));
