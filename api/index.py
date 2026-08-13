@@ -59,17 +59,17 @@ def load_model_bundle():
             "Missing model assets: " + ", ".join(missing)
         )
 
-    model = xgb.XGBClassifier()
-    model.load_model(MODEL_PATH)
+    model = xgb.Booster()
+    model.load_model(str(MODEL_PATH))
     with METADATA_PATH.open(encoding="utf-8") as metadata_file:
         metadata = json.load(metadata_file)
 
     class_names = [str(name) for name in metadata["classes"]]
-    if len(class_names) != model.n_classes_:
-        raise ValueError("Model metadata class count does not match the XGBoost model.")
-    model_feature_names = model.get_booster().feature_names
+    model_feature_names = model.feature_names
     if not model_feature_names:
         raise ValueError("The XGBoost model does not contain feature names.")
+    if len(model_feature_names) != model.num_features():
+        raise ValueError("Model feature metadata is inconsistent.")
     return model, class_names, model_feature_names
 
 
@@ -130,10 +130,27 @@ def prepare_features(
 @app.get("/api/health")
 def health():
     missing = missing_model_files()
+    if missing:
+        return {
+            "status": "configuration_required",
+            "model": "XGBoost",
+            "missing_model_files": missing,
+        }
+
+    try:
+        load_model_bundle()
+    except Exception as error:
+        return {
+            "status": "configuration_required",
+            "model": "XGBoost",
+            "missing_model_files": [],
+            "detail": str(error),
+        }
+
     return {
-        "status": "ready" if not missing else "configuration_required",
+        "status": "ready",
         "model": "XGBoost",
-        "missing_model_files": missing,
+        "missing_model_files": [],
     }
 
 
@@ -161,8 +178,17 @@ async def predict(file: UploadFile = File(...)):
 
     try:
         features = prepare_features(raw_df, model_feature_names)
-        encoded_predictions = model.predict(features).astype(int)
-        probability_rows = model.predict_proba(features)
+        feature_matrix = xgb.DMatrix(features, feature_names=model_feature_names)
+        prediction_options = {}
+        best_iteration = model.attr("best_iteration")
+        if best_iteration is not None:
+            prediction_options["iteration_range"] = (0, int(best_iteration) + 1)
+
+        probability_rows = model.predict(feature_matrix, **prediction_options)
+        if probability_rows.ndim != 2 or probability_rows.shape[1] != len(class_names):
+            raise ValueError("Model output does not match the configured classes.")
+
+        encoded_predictions = np.argmax(probability_rows, axis=1).astype(int)
         labels = [class_names[index] for index in encoded_predictions]
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error)) from error
